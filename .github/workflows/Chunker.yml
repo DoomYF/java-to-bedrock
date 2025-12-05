@@ -1,38 +1,78 @@
-name: Convert Java World to Bedrock
+name: Convertir Java a Bedrock con Chunker
 
 on:
   workflow_dispatch:
 
 jobs:
-  convert:
+  convertir:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Descargar mundo
-        run: |
-          wget -O world.zip "https://litter.catbox.moe/xfqe4t5gxhskqk5b.zip"
-          unzip world.zip -d world
+      - name: Preparar entorno
+        run: sudo apt-get update
 
-      - name: Descargar Chunker CLI
+      - name: Descargar Chunker
         run: |
-          wget -O chunker.zip "https://litter.catbox.moe/qwi4f1q9msq69nbz.zip"
+          echo "Descargando chunker.zip"
+          curl -L "https://litter.catbox.moe/qwi4f1q9msq69nbz.zip" -o chunker.zip
+
+      - name: Descargar Mundo Java
+        run: |
+          echo "Descargando world.zip"
+          curl -L "https://litter.catbox.moe/xfqe4t5gxhskqk5b.zip" -o world.zip
+
+      - name: Extraer archivos
+        run: |
           unzip chunker.zip -d chunker
-          chmod +x chunker/chunker-cli/bin/chunker-cli
+          unzip world.zip -d raw_world
 
-      - name: Ejecutar conversión
+      - name: Mostrar estructura de archivos (DEBUG)
+        run: |
+          echo "=== CHUNKER CONTENT ==="
+          ls -R chunker
+          echo "=== WORLD CONTENT ==="
+          ls -R raw_world
+
+      - name: Reorganizar carpeta del mundo
+        run: |
+          # Detección automática del nombre de carpeta real
+          WORLD_DIR=$(find raw_world -maxdepth 2 -type d -name "world" -o -name "World" -o -name "*" | head -n 1)
+
+          echo "Carpeta detectada: $WORLD_DIR"
+
+          mkdir world
+          cp -r "$WORLD_DIR/"* world/
+
+          echo "=== WORLD FINAL ==="
+          ls -R world
+
+      - name: Hacer ejecutable el CLI
+        run: chmod +x chunker/chunker-cli/bin/chunker-cli
+
+      - name: Convertir Java a Bedrock
         run: |
           mkdir output
+
+          echo "=== Ejecutando Chunker... ==="
           chunker/chunker-cli/bin/chunker-cli \
             -i world \
             -o output \
-            -f BEDROCK_R21_120
+            -f BEDROCK_R21_120 \
+          2>&1 | tee chunker_log.txt
 
+      - name: Mostrar contenido de output
+        run: |
+          echo "=== OUTPUT ==="
+          ls -R output || echo "No hay archivos en output"
 
-      - name: Mostrar archivos generados
-        run: ls -R output
-
-      - name: Subir resultado
+      - name: Subir mundo convertido
         uses: actions/upload-artifact@v4
         with:
-          name: converted-world
+          name: mundo-bedrock
           path: output
+
+      - name: Subir log de chunker
+        uses: actions/upload-artifact@v4
+        with:
+          name: chunker-log
+          path: chunker_log.txt
