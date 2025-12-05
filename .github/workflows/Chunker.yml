@@ -25,7 +25,8 @@ jobs:
           chunker/chunker-cli/bin/chunker-cli \
             -i world \
             -o output \
-            -f bedrock
+            -f BEDROCK_R21_120
+
 
       - name: Mostrar archivos generados
         run: ls -R output
