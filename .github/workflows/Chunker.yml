@@ -1,0 +1,45 @@
+name: Chunker Java to Bedrock
+
+on:
+  workflow_dispatch:
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Descargar Chunker CLI
+        run: |
+          wget -O chunker.zip "https://litter.catbox.moe/qwi4f1q9msq69nbz.zip"
+          unzip chunker.zip -d chunker
+
+      - name: Descargar mundo Java
+        run: |
+          wget -O world_java.zip "https://litter.catbox.moe/xfqe4t5gxhskqk5b.zip"
+          unzip world_java.zip -d input_world
+
+      - name: Hacer ejecutable el CLI (si aplica)
+        run: chmod +x chunker/chunker
+
+      - name: Convertir Java → Bedrock
+        run: |
+          mkdir output_world
+          ./chunker/chunker convert \
+            --input input_world \
+            --output output_world \
+            --from java \
+            --to bedrock
+
+      - name: Comprimir Mundo Bedrock
+        run: |
+          zip -r world_bedrock.zip output_world
+
+      - name: Subir Mundo Convertido
+        uses: actions/upload-artifact@v4
+        with:
+          name: world_bedrock
+          path: world_bedrock.zip
+
