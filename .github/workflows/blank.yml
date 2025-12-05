@@ -1,0 +1,19 @@
+name: Check Chunker Files
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar chunker ZIP
+        run: |
+          wget -O chunker.zip "https://litter.catbox.moe/qwi4f1q9msq69nbz.zip"
+          unzip chunker.zip -d chunker
+
+      - name: Mostrar estructura de archivos
+        run: |
+          echo "=== ARCHIVOS DENTRO DEL ZIP ==="
+          ls -R chunker
+
