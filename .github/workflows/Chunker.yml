@@ -23,14 +23,15 @@ jobs:
         run: |
           mkdir output
           chunker/chunker-cli/bin/chunker-cli \
-            --input world \
-            --output output/world.mcworld \
-            --bedrock
+            -i world \
+            -o output \
+            -f bedrock
+
+      - name: Mostrar archivos generados
+        run: ls -R output
 
       - name: Subir resultado
         uses: actions/upload-artifact@v4
         with:
           name: converted-world
-          path: output/world.mcworld
-
-
+          path: output
